@@ -1,4 +1,4 @@
-from fastapi import FastAPI ,Cookie, File, UploadFile,APIRouter, Request,Response
+from fastapi import FastAPI ,Cookie, File, UploadFile,APIRouter, Request,Response, UploadFile, File
 from fastapi.responses import FileResponse,HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -53,9 +53,14 @@ rooms_sid = {} # rooms_sid[sid] = room_id
 names_sid = {} # names_sid[sid] = client_name
 sessions = {}# 사용자 정보를 저장할 딕셔너리
 combined_asgi_app = socketio.ASGIApp(sio, app)
-# @app.post('/submit')
-# def indexx(file:File):
-#     저장 = file
+
+@app.post('/upload')
+async def upload_file(file: UploadFile = File(...)):
+    with open(file.filename, 'wb') as f:
+        f.write(await file.read())
+    return {"filename": file.filename}
+
+
 @app.get('/join',response_class=HTMLResponse,name='join')
 async def index(request:Request,
           room_id:Optional[str]=None,

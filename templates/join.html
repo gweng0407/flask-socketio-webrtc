@@ -58,8 +58,16 @@
     <div id="video_grid" class="video-grid"></div>
     <video id="local_vid" autoplay muted></video>
 
+    <h2>Upload Files</h2>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" name="files" multiple />
+      <input type="submit" value="Upload" />
+    </form>
+    <p id="status"></p>
+
     <script src="{{url_for('static', path='video-manager.js')}}"></script>
     <script src="{{url_for('static', path='chatroom_ui.js')}}"></script>
     <script src="{{url_for('static', path='chatroom_networking.js')}}"></script>
+    <script src="{{url_for('static', path='fileupload.js')}}"></script>
   </body>
 </html>
