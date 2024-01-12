@@ -1,4 +1,4 @@
-from fastapi import FastAPI ,Cookie, File, UploadFile,APIRouter, Request,Response, UploadFile, File
+from fastapi import FastAPI ,Cookie, File, UploadFile,APIRouter, Request,Response
 from fastapi.responses import FileResponse,HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import threading 
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import FastAPI, Request, Depends, HTTPException, Cookie
-from typing import Optional
+from typing import Optional, List
 app : FastAPI = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -54,11 +54,19 @@ names_sid = {} # names_sid[sid] = client_name
 sessions = {}# 사용자 정보를 저장할 딕셔너리
 combined_asgi_app = socketio.ASGIApp(sio, app)
 
+# @app.post('/upload')
+# async def upload_file(file: UploadFile = File(...)):
+#     file_path = os.path.join('저장', file.filename)
+#     with open(file_path, 'wb') as f:
+#         f.write(await file.read())
+#     return {"filename": file.filename}
+
 @app.post('/upload')
-async def upload_file(file: UploadFile = File(...)):
-    with open(file.filename, 'wb') as f:
-        f.write(await file.read())
-    return {"filename": file.filename}
+async def upload_file(files: UploadFile = File(...)):
+    file_path = os.path.join('저장', files.filename)
+    with open(file_path, 'wb') as f:
+        f.write(await files.read())
+    return {"filename": files.filename}
 
 
 @app.get('/join',response_class=HTMLResponse,name='join')

@@ -2,12 +2,12 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden
+  overflow: hidden;
 }
 
 #local_vid {
-  height: 240px;
-  width: 150px;
+  width: 720px;
+  height: 480px;
   object-fit: cover;
   z-index: 100;
   position: fixed;
