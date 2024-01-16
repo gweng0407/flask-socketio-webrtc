@@ -18,20 +18,22 @@ templates = Jinja2Templates(directory="templates")
 sio : socketio.AsyncServer = socketio.AsyncServer(async_mode='asgi',  
                           credits=True,
                            cors_allowed_origins = [
-                            
-                           "*",
-                           'http://localhost:5000',
-                           'https://admin.socket.io',
-                           'http://127.0.0.1:5000'  # 추가: Socket.IO 서버의 주소를 명시]
-                        
-                           ])  
+    "*",
+    'http://localhost:5000',
+    'https://admin.socket.io',
+    'http://127.0.0.1:5000',  # 콤마(,) 추가
+    'http://localhost:3000',  # 클라이언트 애플리케이션 주소 추가
+    'http://192.168.137.1:3000'
+]
+)  
 app.add_middleware( ##
     CORSMiddleware,
     allow_origins=[
         'http://localhost:5000',
         'https://admin.socket.io',
-        'http://127.0.0.1:5000'
-       
+        'http://127.0.0.1:5000',
+        'http://localhost:3000',  # 클라이언트 애플리케이션 주소 추가
+        'http://192.168.137.1:3000'
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -39,7 +41,7 @@ app.add_middleware( ##
 )
 #관리자 모드 인증 설정
 # sio.instrument(auth=False) # 권한 없이 접속하기
-sio.instrument({'username':'WB38' , 'password':os.environ['WB38']})
+# sio.instrument({'username':'WB38' , 'password':os.environ['WB38']})
 #password = os.environ.get('WB38', 'default_password')
 
 #socketIO와 FastAPI를 합치기
@@ -94,26 +96,26 @@ async def connected(sid,*args, **kwargs):
      print("New socket connected ", sid)
       
 @sio.on("join-room")
-async def on_join_room(sid,data):
+async def on_join_room(sid, data):
     room_id = data["room_id"]
     display_name = sessions[room_id]["name"]
-    
-    await sio.enter_room(room=room_id,sid=sid)
+
+    await sio.enter_room(room=room_id, sid=sid)
     rooms_sid[sid] = room_id
     names_sid[sid] = display_name
     ####
     print("[{}] New member joined: {}<{}>".format(room_id, display_name, sid))
-    await sio.emit("user-connect",{"sid":sid, "name":display_name},room=room_id,skip_sid=sid)
+    await sio.emit("user-connect", {"sid": sid, "name": display_name}, room=room_id, skip_sid=sid)
     if room_id not in users_in_room:
         users_in_room[room_id] = [sid]
-        await sio.emit("user-list", {"my_id": sid},to=sid)  # send own id only
+        await sio.emit("user-list", {"my_id": sid}, to=sid)  # send own id only
     else:
-        usrlist = {u_id: names_sid[u_id]
-                   for u_id in users_in_room[room_id]}
-        await sio.emit("user-list", {"list": usrlist, "my_id": sid},to=sid)
-         # add new member to user list maintained on server
-        users_in_room[room_id].append(sid) # 인식안되는데 됨 
+        usrlist = {u_id: names_sid[u_id] for u_id in users_in_room[room_id]}
+        await sio.emit("user-list", {"list": usrlist, "my_id": sid}, to=sid)
+        # add new member to user list maintained on the server
+        users_in_room[room_id].append(sid)  # 인식안되는데 됨
         print("\nusers: ", users_in_room, "\n")
+
 
 @sio.on("disconnect")
 async def on_disconnect(sid,*args, **kwargs):
