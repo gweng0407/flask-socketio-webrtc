@@ -89,15 +89,21 @@ async def index(request:Request,
     response =   templates.TemplateResponse(
         "join.html", {"request": request,"room_id": room_id, "display_name": sessions[room_id]["name"], "mute_audio": sessions[room_id]["mute_audio"], "mute_video": sessions[room_id]["mute_video"]})
     return response
+
+myRoomID = "your_room_id"
     
 @sio.on("connect")
 async def connected(sid,*args, **kwargs):     
-     # 접속 시 모든 방에 대한 리스트 줌 방 보기  
-     print("New socket connected ", sid)
+    room_id = kwargs.get("room_id")  # 예시로 kwargs에서 가져오는 방식
+    print("New socket connected ", sid)
+    await sio.emit("connected", to=sid)
+    await sio.emit("user-list", {"list": users_in_room.get(room_id, {}), "my_id": sid}, to=sid)
+
       
 @sio.on("join-room")
 async def on_join_room(sid, data):
-    room_id = data["room_id"]
+    print(f"Received join-room event from {sid}: {data}")
+    room_id = data.get["room_id"]
     display_name = sessions[room_id]["name"]
 
     await sio.enter_room(room=room_id, sid=sid)
@@ -106,6 +112,7 @@ async def on_join_room(sid, data):
     ####
     print("[{}] New member joined: {}<{}>".format(room_id, display_name, sid))
     await sio.emit("user-connect", {"sid": sid, "name": display_name}, room=room_id, skip_sid=sid)
+    
     if room_id not in users_in_room:
         users_in_room[room_id] = [sid]
         await sio.emit("user-list", {"my_id": sid}, to=sid)  # send own id only
@@ -113,8 +120,9 @@ async def on_join_room(sid, data):
         usrlist = {u_id: names_sid[u_id] for u_id in users_in_room[room_id]}
         await sio.emit("user-list", {"list": usrlist, "my_id": sid}, to=sid)
         # add new member to user list maintained on the server
-        users_in_room[room_id].append(sid)  # 인식안되는데 됨
-        print("\nusers: ", users_in_room, "\n")
+        users_in_room[room_id].append(sid)
+        
+    print("\nusers: ", users_in_room, "\n")
 
 
 @sio.on("disconnect")
