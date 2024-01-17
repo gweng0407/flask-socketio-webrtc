@@ -1,5 +1,5 @@
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI ,Cookie, File, UploadFile,APIRouter, Request,Response
+from fastapi.responses import FileResponse,HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import socketio
@@ -11,15 +11,7 @@ import threading
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import FastAPI, Request, Depends, HTTPException, Cookie
 from typing import Optional, List
-# Create a FastAPI instance
-app = FastAPI()
-
-# Create a Socket.IO server
-sio = socketio.AsyncServer(cors_allowed_origins="*")
-app.mount("/ws", socketio.ASGIApp(sio))
-
-# Create a WebSocket handler
-templates = Jinja2Templates(directory="templates")
+app : FastAPI = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # 비동기 서버 생성
