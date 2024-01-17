@@ -1,3 +1,5 @@
 Flask-SocketIO==4.3.1
 python-engineio==3.13.2
-python-socketio==4.7.0
+python-socketio
+Jinja2==2.11.3
+starlette==0.14.2
